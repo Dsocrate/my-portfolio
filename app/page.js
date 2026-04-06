@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 
 // ── Embedded Assets ───────────────────────────────────────────────────────────
 const PHOTO_SRC = "/images/profile.png";
@@ -326,7 +327,7 @@ function About() {
           <div style={{ position:"relative" }}>
             {/* Photo with styled border */}
             <div style={{ borderRadius:"20px", overflow:"hidden", position:"relative", boxShadow:"0 32px 80px rgba(108,99,255,0.25), 0 0 0 1px rgba(108,99,255,0.15)" }}>
-              <img src={PHOTO_SRC} alt="Kehinde Bayode — Senior Product Designer" loading="eager" decoding="async" fetchPriority="high" style={{ width:"100%", display:"block", objectFit:"cover" }} />
+              <Image src={PHOTO_SRC} alt="Kehinde Bayode — Senior Product Designer" width={900} height={1100} priority quality={75} sizes="(max-width: 900px) 100vw, 420px" style={{ width:"100%", height:"auto", display:"block", objectFit:"cover" }} />
               {/* subtle purple overlay to tie photo into theme */}
               <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom, rgba(108,99,255,0.08) 0%, rgba(8,8,14,0.15) 80%, rgba(8,8,14,0.7) 100%)", pointerEvents:"none" }} />
             </div>
@@ -376,6 +377,14 @@ function About() {
 function ProjectModal({ project, onClose }) {
   const [activeScreen, setActiveScreen] = useState(0);
   useEffect(() => { document.body.style.overflow="hidden"; return () => { document.body.style.overflow=""; }; }, []);
+  useEffect(() => {
+    if (!project?.screens?.length || typeof window === "undefined") return;
+    const preloadTargets = [project.realCover || PROJECT_COVERS[project.coverKey], project.screens[activeScreen]?.img, project.screens[activeScreen + 1]?.img].filter(Boolean);
+    preloadTargets.forEach((src) => {
+      const img = new window.Image();
+      img.src = src;
+    });
+  }, [project, activeScreen]);
   const caseStudy = [
     ["🎯","The Problem",project.sections.problem],
     ["🔍","The Research",project.sections.research],
@@ -391,9 +400,7 @@ function ProjectModal({ project, onClose }) {
 
         {/* Cover with gradient bottom */}
         <div style={{ position:"relative", height:"220px", overflow:"hidden", background:"#0a0a12" }}>
-          <img src={project.realCover || PROJECT_COVERS[project.coverKey]} alt={project.name} loading="eager" decoding="async" fetchPriority="high" onError={e=>{e.currentTarget.src=PROJECT_COVERS[project.coverKey]||project.realCover||"/images/profile.png";}} style={{ width:"100%", height:"100%", objectFit:"cover", objectPosition:"top center", display:"block", transition:"transform 0.4s ease" }}
-            onMouseEnter={e => e.target.style.transform="scale(1.04)"}
-            onMouseLeave={e => e.target.style.transform="scale(1)"} />
+          <Image src={project.realCover || PROJECT_COVERS[project.coverKey] || "/images/profile.png"} alt={project.name} fill priority quality={72} sizes="(max-width: 900px) 100vw, 860px" style={{ objectFit:"cover", objectPosition:"top center", display:"block", transition:"transform 0.4s ease" }} />
           <div style={{ position:"absolute", inset:0, background:`linear-gradient(to bottom, transparent 30%, rgba(13,13,26,0.95) 100%)` }} />
           <div style={{ position:"absolute", bottom:"1.25rem", left:"2rem" }}>
             <span style={{ color:project.accent, fontFamily:"'DM Sans', sans-serif", fontSize:"0.72rem", letterSpacing:"0.1em", textTransform:"uppercase" }}>{project.tag}</span>
@@ -429,8 +436,7 @@ function ProjectModal({ project, onClose }) {
             </div>
             {project.screens[activeScreen].img ? (
               <div style={{ borderRadius:"8px", overflow:"hidden", marginBottom:"0.85rem", border:`1px solid ${project.color}30` }}>
-                <img src={project.screens[activeScreen].img} alt={project.screens[activeScreen].label} loading="lazy" decoding="async" onError={e=>{e.currentTarget.src=project.realCover || PROJECT_COVERS[project.coverKey] || "/images/profile.png";}}
-                  style={{ width:"100%", display:"block", height:"auto" }} />
+                <Image key={project.screens[activeScreen].img || activeScreen} src={project.screens[activeScreen].img || project.realCover || PROJECT_COVERS[project.coverKey] || "/images/profile.png"} alt={project.screens[activeScreen].label} width={1600} height={1100} quality={68} priority={activeScreen === 0} sizes="(max-width: 768px) 100vw, 80vw" style={{ width:"100%", display:"block", height:"auto" }} />
               </div>
             ) : null}
             <h4 style={{ color:"#fff", fontFamily:"'Playfair Display', serif", fontSize:"1rem", marginBottom:"0.6rem" }}>{project.screens[activeScreen].label}</h4>
@@ -481,7 +487,7 @@ function Projects() {
             <div onClick={() => setSelected(p)} style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:"16px", overflow:"hidden", cursor:"pointer", transition:"transform 0.3s ease,border-color 0.3s ease,box-shadow 0.3s ease", height:"100%", display:"flex", flexDirection:"column" }} onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-6px)";e.currentTarget.style.borderColor=`${p.color}55`;e.currentTarget.style.boxShadow=`0 20px 60px ${p.color}22`;}} onMouseLeave={e=>{e.currentTarget.style.transform="translateY(0)";e.currentTarget.style.borderColor="rgba(255,255,255,0.07)";e.currentTarget.style.boxShadow="none";}}>
               {/* Cover image */}
               <div style={{ height:"180px", overflow:"hidden", position:"relative", flexShrink:0 }}>
-                <img src={p.realCover || PROJECT_COVERS[p.coverKey]} alt={p.name} loading="lazy" decoding="async" onError={e=>{e.currentTarget.src=PROJECT_COVERS[p.coverKey]||p.realCover||"/images/profile.png";}} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block", transition:"transform 0.5s ease" }} onMouseEnter={e=>e.target.style.transform="scale(1.06)"} onMouseLeave={e=>e.target.style.transform="scale(1)"} />
+                <Image src={p.realCover || PROJECT_COVERS[p.coverKey] || "/images/profile.png"} alt={p.name} fill loading="lazy" quality={72} sizes="(max-width: 768px) 100vw, 33vw" style={{ objectFit:"cover", display:"block", transition:"transform 0.5s ease" }} />
                 <div style={{ position:"absolute", inset:0, background:"linear-gradient(to bottom,transparent 40%,rgba(8,8,14,0.75) 100%)" }} />
                 <div style={{ position:"absolute", bottom:0, left:0, right:0, height:"3px", background:`linear-gradient(90deg,${p.color},${p.accent})` }} />
               </div>
